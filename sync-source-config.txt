@@ -1,3 +1,3 @@
 UPSTREAM_REPO=https://github.com/trusted-execution-clusters/operator.git
-UPSTREAM_REF=43be716654a0073fde2f2730f9301a75ffc09754
+UPSTREAM_REF=7238e18b111119ef4e022c21b0019b0b8b471cee
 DEST_DIR=operator

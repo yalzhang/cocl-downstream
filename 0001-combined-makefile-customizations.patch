@@ -30,7 +30,28 @@
 
  cluster-up:
  	RUNTIME=$(RUNTIME) scripts/create-cluster-kind.sh
-@@ -162,7 +163,7 @@
+@@ -102,9 +103,8 @@
+ 	tar -cf trusted-execution-operator-$(TAG).tar config
+
+ # OLM Bundle related variables
+-BUNDLE_DIR := bundle
+-BUNDLE_IMAGE := $(REGISTRY)/trusted-cluster-operator-bundle:$(TAG)
+-BUNDLE_PACKAGE ?= trusted-cluster-operator
++BUNDLE_DIR := ../bundle
++BUNDLE_IMAGE := $(REGISTRY)/cocl-operator-bundle:$(TAG)
+ PREVIOUS_CSV ?= ""  # optional previous CSV for OLM upgrades
+
+ .PHONY: bundle bundle-image push-bundle
+@@ -114,7 +114,7 @@
+ 	@OPERATOR_IMAGE=$(OPERATOR_IMAGE) \
+ 	COMPUTE_PCRS_IMAGE=$(COMPUTE_PCRS_IMAGE) \
+ 	REG_SERVER_IMAGE=$(REG_SERVER_IMAGE) \
+-	scripts/generate-bundle-prod.sh -v $(TAG) $(if $(PREVIOUS_CSV),-p $(PREVIOUS_CSV))
++	../hack/generate_bundle.sh -v $(TAG) $(if $(PREVIOUS_CSV),-p $(PREVIOUS_CSV))
+
+ bundle-image: bundle
+ 	@echo "Building OLM bundle image..."
+@@ -187,7 +187,7 @@
  $(KOPIUM): $(LOCALBIN)
  	$(call cargo-install-tool,$(KOPIUM),kopium,$(KOPIUM_VERSION))
 
