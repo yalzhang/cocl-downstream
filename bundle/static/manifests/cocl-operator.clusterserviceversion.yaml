@@ -43,12 +43,12 @@ metadata:
         }
       ]
     olm.skipRange: ">=0.0.0 <1.0.0"
-    containerImage: "quay.io/trusted-execution-clusters/cocl-operator:v0.1.0"
+    containerImage: "quay.io/confidential-clusters/cocl-operator:v0.1.0"
     capabilities: Basic Install
   name: cocl-operator.v0.1.0
   namespace: placeholder
 spec:
-  displayName: Trusted Execution Cluster Operator
+  displayName: Confidential Cluster operator
   description: An operator to manage trusted execution cluster, which are Kubernetes cluster that can attest their integrity to a relying party
   version: 0.1.0
   minKubeVersion: "1.27.0"
@@ -94,7 +94,7 @@ spec:
                 serviceAccountName: trusted-cluster-operator
                 containers:
                   - name: cocl-operator
-                    image: quay.io/trusted-execution-clusters/cocl-operator:v0.1.0
+                    image: quay.io/confidential-clusters/cocl-operator:v0.1.0
                     command:
                       - /usr/bin/operator
                     imagePullPolicy: IfNotPresent
@@ -130,13 +130,13 @@ spec:
       - name: trustedexecutionclusters.trusted-execution-clusters.io
         version: v1alpha1
         kind: TrustedExecutionCluster
-        displayName: Trusted Execution Cluster
-        description: Represents a trusted execution cluster.
+        displayName: Confidential Cluster
+        description: Represents a confidential cluster.
       - name: machines.trusted-execution-clusters.io
         version: v1alpha1
         kind: Machine
         displayName: Machine
-        description: Represents a machine in a trusted execution cluster.
+        description: Represents a machine in a confidential cluster.
       - name: approvedimages.trusted-execution-clusters.io
         version: v1alpha1
         kind: ApprovedImage
