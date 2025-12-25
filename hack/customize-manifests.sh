@@ -43,7 +43,12 @@ echo "-->  - Patching TrustedExecutionCluster CR (${CLUSTER_CR_FILE})..."
 "$YQ" -i ".spec.pcrsComputeImage = \"${REGISTRY}/compute-pcrs:${TAG}\"" "${CLUSTER_CR_FILE}"
 "$YQ" -i ".spec.registerServerImage = \"${REGISTRY}/registration-server:${TAG}\"" "${CLUSTER_CR_FILE}"
 
-# 2. Patch Kind forwarding service namespaces
+# 3. Patch config/rbac/kustomization.yaml to set the default namespace and the label
+echo "-->  - Setting default namespace in config/rbac/kustomization.yaml..."
+"$YQ" -i ".namespace = \"${NAMESPACE}\"" "${OPERATOR_DIR}/config/rbac/kustomization.yaml"
+"$YQ" -i '.commonLabels."app.kubernetes.io/name" = "cocl-operator"' "${OPERATOR_DIR}/config/rbac/kustomization.yaml"
+
+# 4. Patch Kind forwarding service namespaces
 echo "-->  - Patching Kind forwarding service namespaces..."
 "$YQ" -i ".metadata.namespace = \"${NAMESPACE}\"" "${KIND_FORWARD_REGISTER_FILE}"
 "$YQ" -i ".metadata.namespace = \"${NAMESPACE}\"" "${KIND_FORWARD_KBS_FILE}"

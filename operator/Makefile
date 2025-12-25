@@ -109,9 +109,7 @@ endif
 	scripts/clean-cluster-kind.sh $(OPERATOR_IMAGE) $(COMPUTE_PCRS_IMAGE) $(REG_SERVER_IMAGE)
 	$(YQ) '.spec.publicTrusteeAddr = "$(TRUSTEE_ADDR):8080"' \
 		-i $(DEPLOY_PATH)/trusted_execution_cluster_cr.yaml
-	cp ../hack/kustomization.yaml config/rbac
 	$(YQ) '.namespace = "$(NAMESPACE)"' -i config/rbac/kustomization.yaml
-	$(KUBECTL) create namespace $(NAMESPACE) || true
 	$(KUBECTL) apply -f $(DEPLOY_PATH)/operator.yaml
 	$(KUBECTL) apply -f config/crd
 	$(KUBECTL) apply -k config/rbac
