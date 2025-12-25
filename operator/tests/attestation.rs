@@ -2,10 +2,10 @@
 //
 // SPDX-License-Identifier: MIT
 
-use cocl_operator_test_utils::*;
+use trusted_cluster_operator_test_utils::*;
 
 #[cfg(feature = "virtualization")]
-use cocl_operator_test_utils::virt;
+use trusted_cluster_operator_test_utils::virt;
 
 #[cfg(feature = "virtualization")]
 struct SingleAttestationContext {
@@ -248,7 +248,7 @@ async fn test_vm_reboot_attestation() -> anyhow::Result<()> {
 virt_test! {
 async fn test_vm_reboot_delete_machine() -> anyhow::Result<()> {
     use kube::Api;
-    use cocl_operator_lib::Machine;
+    use trusted_cluster_operator_lib::Machine;
 
     let test_ctx = setup!().await?;
     test_ctx.info("Testing Machine deletion - VM should no longer boot successfully when its Machine CRD was removed");
