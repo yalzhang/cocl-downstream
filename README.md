@@ -67,7 +67,7 @@ make -C operator cluster-up
 # Login to your remote container registry (e.g., quay.io)
 docker login quay.io
 # Install OLM on your target cluster
-(cd /tmp && operator-sdk olm install)
+operator-sdk olm install
 ```
 
 **2. Set Environment Variables**
@@ -95,7 +95,7 @@ Deploy the bundle to your cluster. We use `confidential-clusters` as an example 
 
 ```bash
 kubectl create namespace confidential-clusters || true
-(cd /tmp && operator-sdk run bundle ${REGISTRY}/cocl-operator-bundle:${TAG} --namespace confidential-clusters)
+operator-sdk run bundle ${REGISTRY}/cocl-operator-bundle:${TAG} --namespace confidential-clusters
 ```
 
 **5. Create the Custom Resource**
@@ -113,13 +113,13 @@ export TRUSTEE_ADDR=192.168.122.1
 
 # Update the CR with the trustee address (yq is installed via `make build-tools`)
 yq -i '.spec.publicTrusteeAddr = "'$TRUSTEE_ADDR':8080"' \
-  config/deploy/trusted_execution_cluster_cr.yaml
+  operator/config/deploy/trusted_execution_cluster_cr.yaml
 
 # Apply the configured CRs
-kubectl apply -f config/deploy/trusted_execution_cluster_cr.yaml
-kubectl apply -f config/deploy/approved_image_cr.yaml
-kubectl apply -f kind/kbs-forward.yaml
-kubectl apply -f kind/register-forward.yaml
+kubectl apply -f operator/config/deploy/trusted_execution_cluster_cr.yaml
+kubectl apply -f operator/config/deploy/approved_image_cr.yaml
+kubectl apply -f operator/kind/kbs-forward.yaml
+kubectl apply -f operator/kind/register-forward.yaml
 ```
 
 #### **Cleaning Up the Bundle Deployment**
