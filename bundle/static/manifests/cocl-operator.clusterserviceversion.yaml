@@ -12,23 +12,13 @@ metadata:
           "apiVersion": "trusted-execution-clusters.io/v1alpha1",
           "kind": "TrustedExecutionCluster",
           "metadata": {
-            "name": "example-trustedexecutioncluster"
+            "name": "confidential-cluster"
           },
           "spec": {
             "trusteeImage": "quay.io/trusted-execution-clusters/key-broker-service:tpm-verifier-built-in-as-20250711",
-            "pcrsComputeImage": "quay.io/trusted-execution-clusters/compute-pcrs:latest",
-            "registerServerImage": "quay.io/trusted-execution-clusters/registration-server:latest"
-          }
-        },
-        {
-          "apiVersion": "trusted-execution-clusters.io/v1alpha1",
-          "kind": "Machine",
-          "metadata": {
-            "name": "example-machine"
-          },
-          "spec": {
-            "id": "c3e3e3e3-c3e3-c3e3-c3e3-c3e3e3e3e3e3",
-            "address": "192.168.1.100"
+            "pcrsComputeImage": "quay.io/trusted-execution-clusters/compute-pcrs:v0.1.0",
+            "registerServerImage": "quay.io/trusted-execution-clusters/registration-server:v0.1.0",
+            "publicTrusteeAddr": "kbs-service.confidential-clusters.svc.cluster.local:8080"
           }
         },
         {
@@ -49,7 +39,7 @@ metadata:
   namespace: placeholder
 spec:
   displayName: Confidential Cluster operator
-  description: An operator to manage trusted execution cluster, which are Kubernetes cluster that can attest their integrity to a relying party
+  description: The Confidential Cluster operator introduces the TrustedExecutionCluster Custom Resource Definition (CRD) to enable declarative configuration of confidential OpenShift clusters. The operator watches TrustedExecutionCluster resources and reconciles the configuration of the trustee service responsible for remote attestation. This includes managing Key Broker Service (KBS) configuration, attestation policies, and resource access policies required for confidential workloads. By continuously reconciling the desired state, the Confidential Cluster operator enables OpenShift clusters running in trusted execution environments to attest their integrity to external relying parties.
   version: 0.1.0
   minKubeVersion: "1.27.0"
   provider:
@@ -74,7 +64,6 @@ spec:
     spec:
       clusterPermissions:
         - serviceAccountName: trusted-cluster-operator
-          # Rules are dynamically generated from config/rbac/role.yaml during the bundle build
           rules: []
       deployments:
         - name: cocl-operator
