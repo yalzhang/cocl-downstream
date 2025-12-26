@@ -26,7 +26,8 @@ for var in OPERATOR_IMAGE COMPUTE_PCRS_IMAGE REG_SERVER_IMAGE; do
     : "${!var:?Please export $var}"
 done
 
-PROJECT_ROOT="$(pwd)"
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+PROJECT_ROOT="$(realpath "${SCRIPT_DIR}/..")"
 BUNDLE_DIR="${PROJECT_ROOT}/bundle"
 BUNDLE_MANIFESTS="${BUNDLE_DIR}/manifests"
 BUNDLE_METADATA="${BUNDLE_DIR}/metadata"
