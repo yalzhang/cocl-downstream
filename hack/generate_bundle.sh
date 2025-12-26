@@ -94,3 +94,4 @@ cp -r "${BUNDLE_METADATA}" "$TMP_DIR/metadata"
 
 echo "=> Bundle validated successfully!"
 echo "=> OLM bundle ready at ${BUNDLE_DIR}"
+
