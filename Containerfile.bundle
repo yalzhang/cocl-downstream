@@ -1,0 +1,82 @@
+# SPDX-FileCopyrightText: Yalan Zhang <yalzhang@redhat.com>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+# STAGE 1: BUILDER
+FROM registry.access.redhat.com/ubi9/ubi AS builder
+
+ARG OPERATOR_IMAGE="quay.io/confidential-clusters/cocl-operator:0.1.0"
+ARG COMPUTE_PCRS_IMAGE="quay.io/confidential-clusters/compute-pcrs:0.1.0"
+ARG REG_SERVER_IMAGE="quay.io/confidential-clusters/registration-server:0.1.0"
+ARG TRUSTEE_IMAGE="quay.io/trusted-execution-clusters/key-broker-service:tpm-verifier-built-in-as-20250711"
+ARG TAG="0.1.0"
+ARG NAMESPACE="confidential-clusters"
+
+ARG YQ_VERSION=v4.48.1
+ARG OPERATOR_SDK_VERSION=v1.38.0
+
+RUN dnf -y update && \
+    dnf install -y git make golang wget && \
+    wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_amd64 -O /usr/bin/yq && \
+    chmod +x /usr/bin/yq && \
+    wget https://github.com/operator-framework/operator-sdk/releases/download/${OPERATOR_SDK_VERSION}/operator-sdk_linux_amd64 -O /usr/bin/operator-sdk && \
+    chmod +x /usr/bin/operator-sdk && \
+    dnf clean all
+
+RUN mkdir -p /workspace/source
+ENV HOME=/workspace
+WORKDIR /workspace/source
+
+COPY . .
+
+RUN chown -R 1001:1001 /workspace
+USER 1001
+
+# Note: We use upstream's CSV and metadata templates as-is
+# All downstream customizations are applied by bundle/customize-bundle.sh after generation
+
+# Generate manifests first (creates CRDs and RBAC rules)
+# Extract REGISTRY from OPERATOR_IMAGE (everything before the last /)
+RUN make -C operator manifests \
+    NAMESPACE="${NAMESPACE}" \
+    REGISTRY="${OPERATOR_IMAGE%/*}" \
+    TAG="${TAG}"
+
+# Generate bundle using upstream script
+# The script will:
+# - Copy CRDs from config/crd/
+# - Copy RBAC from config/rbac/
+# - Inject RBAC rules into CSV
+# - Patch image references with build args
+# - Validate the bundle with operator-sdk
+# Note: We must pass REGISTRY to make, otherwise Makefile recalculates image URLs from its default REGISTRY
+RUN cd operator && \
+    make bundle \
+    TAG="${TAG}" \
+    NAMESPACE="${NAMESPACE}" \
+    REGISTRY="${OPERATOR_IMAGE%/*}" \
+    OPERATOR_IMAGE="${OPERATOR_IMAGE}" \
+    COMPUTE_PCRS_IMAGE="${COMPUTE_PCRS_IMAGE}" \
+    REG_SERVER_IMAGE="${REG_SERVER_IMAGE}" \
+    TRUSTEE_IMAGE="${TRUSTEE_IMAGE}"
+
+# Apply downstream-specific customizations to the generated bundle
+RUN bash /workspace/source/bundle/customize-bundle.sh
+
+# STAGE 2: FINAL IMAGE
+# This stage creates the final, clean bundle image using the minimal UBI.
+FROM registry.access.redhat.com/ubi9/ubi-minimal
+
+# Copy ONLY the generated bundle artifacts from the builder stage into the final image.
+COPY --from=builder /workspace/source/operator/bundle/manifests/ /manifests/
+COPY --from=builder /workspace/source/operator/bundle/metadata/ /metadata/
+
+USER 1001
+
+# Set standard OLM Bundle Labels
+LABEL operators.operatorframework.io.bundle.mediatype.v1="registry+v1"
+LABEL operators.operatorframework.io.bundle.manifests.v1="manifests/"
+LABEL operators.operatorframework.io.bundle.metadata.v1="metadata/"
+LABEL operators.operatorframework.io.bundle.package.v1="cocl-operator"
+LABEL operators.operatorframework.io.bundle.channels.v1="alpha"
+LABEL operators.operatorframework.io.bundle.channel.default.v1="alpha"
